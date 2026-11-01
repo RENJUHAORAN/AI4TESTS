@@ -1,0 +1,18 @@
+{
+  "name": "codex-playwright-zero-code-poc",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Python zero-code UI test contract runner for Codex and Playwright MCP workflows",
+  "scripts": {
+    "test": "py -X utf8 -m pytest",
+    "test:skills": "py -X utf8 scripts\\verify_skills.py",
+    "test:contract": "py -X utf8 scripts\\run_contract.py",
+    "test:demo": "py -X utf8 scripts\\run_demo.py",
+    "test:demo:fail": "py -X utf8 scripts\\run_failure_demo.py",
+    "test:mcp": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-mcp-smoke.ps1 -ApproveMcp",
+    "verify": "py -X utf8 -m pytest && py -X utf8 scripts\\verify_skills.py && py -X utf8 scripts\\run_demo.py && py -X utf8 scripts\\run_failure_demo.py"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

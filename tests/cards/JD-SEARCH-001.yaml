@@ -1,0 +1,20 @@
+id: JD-SEARCH-001
+title: 京东热卖移动端公开搜索可以返回匹配商品
+priority: P1
+given:
+  - 用户未登录，只访问公开活动页
+  - 京东热卖移动端活动页可以正常访问
+when:
+  - 使用移动端浏览器上下文打开活动页
+  - 在搜索框中输入关键词 iPhone
+  - 点击搜索按钮
+then:
+  - 页面切换到 re.jd.com 搜索结果页，URL 包含 keyword=iPhone
+  - 结果页标题包含商品搜索
+  - 页面显示至少一条商品结果
+  - 首条商品结果文本包含 iPhone
+dataRefs:
+  - JD_BASE_URL
+constraints:
+  - 不登录、不加购、不下单、不支付、不修改账户
+  - 只访问 re.m.jd.com 和 re.jd.com

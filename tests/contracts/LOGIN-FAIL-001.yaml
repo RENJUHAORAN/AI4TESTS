@@ -1,0 +1,66 @@
+schemaVersion: "1.0"
+id: LOGIN-FAIL-001
+title: 错误密码不能进入首页
+priority: P1
+platform: web
+owner: qa-login
+mode: verify
+
+target:
+  environment: local-demo
+  baseUrlRef: WEB_BASE_URL
+  allowedOrigins:
+    - http://127.0.0.1:4173
+    - http://127.0.0.1:4174
+
+data:
+  username:
+    secretRef: DEMO_USER
+  password:
+    secretRef: DEMO_INVALID_PASSWORD
+
+steps:
+  - id: open-login
+    intent: 打开登录页
+    action: navigate
+    url: /login
+
+  - id: fill-username
+    intent: 输入用户名
+    action: fill
+    locator:
+      label: 用户名
+    value: ${data.username}
+
+  - id: fill-password
+    intent: 输入错误密码
+    action: fill
+    locator:
+      label: 密码
+    value: ${data.password}
+
+  - id: click-login
+    intent: 点击登录
+    action: click
+    locator:
+      role: button
+      name: 登录
+
+assertions:
+  - id: entered-home
+    type: url
+    operator: matches
+    expected: /home
+    timeoutMs: 1000
+
+evidence:
+  trace: always
+  screenshot: on-failure
+  accessibilitySnapshot: on-failure
+  network: always
+  console: always
+
+risk:
+  level: normal
+  destructive: false
+  approvalRequired: false

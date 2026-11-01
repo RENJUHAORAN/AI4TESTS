@@ -1,0 +1,18 @@
+# 复制到 CODEX_HOME/config.toml 前，先替换目标域名并完成安全评审。
+# 本文件故意不自动加载，避免覆盖用户现有的 Codex 配置。
+
+[mcp_servers.playwright]
+command = "npx"
+args = [
+  "-y",
+  "@playwright/mcp@0.0.84",
+  "--headless",
+  "--isolated",
+  "--block-service-workers",
+  "--redact-url-params",
+  "access_token,code,state",
+  "--output-dir",
+  "./artifacts/playwright-mcp",
+  "--allowed-origins",
+  "http://127.0.0.1:4173"
+]

@@ -1,0 +1,17 @@
+id: LOGIN-FAIL-001
+title: 错误密码不能进入首页
+priority: P1
+given:
+  - 测试账号已存在且未锁定
+  - 用户当前未登录
+when:
+  - 打开登录页
+  - 输入正确用户名和错误密码
+  - 点击登录
+then:
+  - 页面停留在登录页，不进入首页
+dataRefs:
+  - DEMO_USER
+  - DEMO_INVALID_PASSWORD
+constraints:
+  - 仅访问本地演示环境

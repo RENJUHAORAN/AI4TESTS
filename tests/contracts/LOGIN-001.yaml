@@ -1,0 +1,89 @@
+schemaVersion: "1.0"
+id: LOGIN-001
+title: 正确账号可以登录并进入首页
+priority: P0
+platform: web
+owner: qa-login
+mode: verify
+
+target:
+  environment: local-demo
+  baseUrlRef: WEB_BASE_URL
+  allowedOrigins:
+    - http://127.0.0.1:4173
+
+preconditions:
+  - type: account
+    ref: demo_user
+    state: active
+
+data:
+  username:
+    secretRef: DEMO_USER
+  password:
+    secretRef: DEMO_PASSWORD
+
+steps:
+  - id: open-login
+    intent: 打开登录页
+    action: navigate
+    url: /login
+
+  - id: fill-username
+    intent: 输入用户名
+    action: fill
+    locator:
+      testId: login-username
+      role: textbox
+      name: 用户名
+    value: ${data.username}
+
+  - id: fill-password
+    intent: 输入密码
+    action: fill
+    locator:
+      testId: login-password
+      role: textbox
+      name: 密码
+    value: ${data.password}
+
+  - id: click-login
+    intent: 点击登录
+    action: click
+    locator:
+      testId: login-submit
+      role: button
+      name: 登录
+
+assertions:
+  - id: entered-home
+    type: url
+    operator: matches
+    expected: /home
+
+  - id: welcome-visible
+    type: text
+    locator:
+      role: heading
+      name: 欢迎回来
+    operator: contains
+    expected: 欢迎回来
+
+  - id: logout-visible
+    type: visible
+    locator:
+      role: button
+      name: 退出登录
+
+evidence:
+  trace: always
+  screenshot: on-failure
+  accessibilitySnapshot: on-failure
+  network: always
+  console: always
+
+risk:
+  level: normal
+  destructive: false
+  financial: false
+  approvalRequired: false

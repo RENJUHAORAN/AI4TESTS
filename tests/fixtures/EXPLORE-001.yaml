@@ -1,0 +1,38 @@
+schemaVersion: "1.0"
+id: EXPLORE-001
+title: 探索模式不能进入确定性执行器
+priority: P2
+platform: web
+owner: qa-platform
+mode: explore
+
+target:
+  environment: local-demo
+  baseUrlRef: WEB_BASE_URL
+  allowedOrigins:
+    - http://127.0.0.1:4173
+
+data: {}
+
+steps:
+  - id: open-login
+    intent: 打开登录页
+    action: navigate
+    url: /login
+
+assertions:
+  - id: login-url
+    type: url
+    operator: matches
+    expected: /login
+
+evidence:
+  trace: never
+  screenshot: never
+  network: never
+  console: never
+
+risk:
+  level: read-only
+  destructive: false
+  approvalRequired: false

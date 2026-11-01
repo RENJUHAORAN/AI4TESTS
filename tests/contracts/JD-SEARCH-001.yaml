@@ -1,0 +1,77 @@
+schemaVersion: "1.0"
+id: JD-SEARCH-001
+title: 京东热卖移动端关键词搜索
+priority: P1
+platform: web
+owner: qa-platform
+mode: verify
+target:
+  environment: jd-public-mobile
+  baseUrlRef: JD_BASE_URL
+  allowedOrigins:
+    - https://re.m.jd.com
+    - https://re.jd.com
+browser:
+  viewport:
+    width: 390
+    height: 844
+  isMobile: true
+  deviceScaleFactor: 3
+  hasTouch: true
+  locale: zh-CN
+preconditions: []
+data:
+  keyword: iPhone
+steps:
+  - id: open-homelike
+    intent: 打开京东热卖移动端首页
+    action: navigate
+    url: https://re.m.jd.com/page/homelike?re_dcp=2y8&cu=true&utm_source=ntp.msn.cn&utm_medium=tuiguang&utm_campaign=t_2038196523_weiruan_mz&utm_term=101120874441636791793523992890
+  - id: enter-keyword
+    intent: 在公开页面搜索框中输入关键词
+    action: fill
+    locator:
+      css: .jd_search_row input.txt
+    value: "${data.keyword}"
+  - id: submit-search
+    intent: 提交公开商品搜索
+    action: click
+    locator:
+      css: .jd_search_row a.btn
+  - id: switch-to-results
+    intent: 切换到搜索打开的结果页
+    action: switchPage
+    url: https://re.jd.com/search
+    timeoutMs: 30000
+assertions:
+  - id: result-url
+    type: url
+    operator: contains
+    expected: https://re.jd.com/search
+  - id: result-title
+    type: title
+    operator: contains
+    expected: 商品搜索
+  - id: result-item-visible
+    type: visible
+    locator:
+      css: .jd-pick-content-item
+      nth: 0
+  - id: result-item-matches-keyword
+    type: text
+    operator: contains
+    expected: iPhone
+    locator:
+      css: .jd-pick-content-item
+      nth: 0
+evidence:
+  trace: always
+  screenshot: always
+  network: always
+  console: always
+  accessibilitySnapshot: always
+risk:
+  level: read-only
+  destructive: false
+  financial: false
+  approvalRequired: false

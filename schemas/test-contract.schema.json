@@ -1,0 +1,437 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.internal/schemas/test-contract.schema.json",
+  "title": "UI Test Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "title",
+    "priority",
+    "platform",
+    "owner",
+    "mode",
+    "target",
+    "steps",
+    "assertions",
+    "evidence",
+    "risk"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_-]{2,63}$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "priority": {
+      "enum": ["P0", "P1", "P2", "P3"]
+    },
+    "platform": {
+      "const": "web"
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "enum": ["verify", "explore"]
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["environment", "baseUrlRef", "allowedOrigins"],
+      "properties": {
+        "environment": {
+          "type": "string",
+          "minLength": 1
+        },
+        "baseUrlRef": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "allowedOrigins": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^https?://[^\\s]+$"
+          }
+        }
+      }
+    },
+    "browser": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "viewport": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["width", "height"],
+          "properties": {
+            "width": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "height": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "isMobile": {
+          "type": "boolean"
+        },
+        "deviceScaleFactor": {
+          "type": "number",
+          "minimum": 0.1
+        },
+        "userAgent": {
+          "type": "string",
+          "minLength": 1
+        },
+        "locale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "timezoneId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hasTouch": {
+          "type": "boolean"
+        }
+      }
+    },
+    "preconditions": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "data": {
+      "type": "object"
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/step"
+      }
+    },
+    "assertions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/assertion"
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace", "screenshot", "network", "console"],
+      "properties": {
+        "trace": {
+          "enum": ["always", "on-failure", "never"]
+        },
+        "screenshot": {
+          "enum": ["always", "on-failure", "never"]
+        },
+        "network": {
+          "enum": ["always", "on-failure", "never"]
+        },
+        "console": {
+          "enum": ["always", "on-failure", "never"]
+        },
+        "accessibilitySnapshot": {
+          "enum": ["always", "on-failure", "never"]
+        }
+      }
+    },
+    "risk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "destructive", "approvalRequired"],
+      "properties": {
+        "level": {
+          "enum": ["read-only", "normal", "high"]
+        },
+        "destructive": {
+          "type": "boolean"
+        },
+        "financial": {
+          "type": "boolean"
+        },
+        "approvalRequired": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "locator": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "testId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "css": {
+          "type": "string",
+          "minLength": 1
+        },
+        "xpath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nth": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "exact": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "intent", "action"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{1,63}$"
+        },
+        "intent": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action": {
+          "enum": [
+            "navigate",
+            "fill",
+            "click",
+            "press",
+            "selectOption",
+            "check",
+            "uncheck",
+            "hover",
+            "waitFor",
+            "switchPage"
+          ]
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "locator": {
+          "$ref": "#/$defs/locator"
+        },
+        "value": {
+          "type": ["string", "number", "boolean"]
+        },
+        "state": {
+          "enum": ["attached", "detached", "visible", "hidden"]
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "enum": ["navigate", "switchPage"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "url": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": ["url"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "enum": [
+                  "fill",
+                  "click",
+                  "press",
+                  "selectOption",
+                  "check",
+                  "uncheck",
+                  "hover",
+                  "waitFor"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "locator": {
+                "$ref": "#/$defs/locator"
+              }
+            },
+            "required": ["locator"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "enum": ["fill", "press", "selectOption"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": ["string", "number", "boolean"]
+              }
+            },
+            "required": ["value"]
+          }
+        }
+      ]
+    },
+    "assertion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{1,63}$"
+        },
+        "type": {
+          "enum": ["url", "title", "visible", "hidden", "text", "value", "network"]
+        },
+        "operator": {
+          "enum": ["equals", "contains", "matches"]
+        },
+        "expected": {
+          "type": ["string", "number", "boolean"]
+        },
+        "locator": {
+          "$ref": "#/$defs/locator"
+        },
+        "request": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "type": "string"
+            },
+            "path": {
+              "type": "string"
+            }
+          }
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": ["visible", "hidden", "text", "value"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "locator": {
+                "$ref": "#/$defs/locator"
+              }
+            },
+            "required": ["locator"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": ["url", "title", "text", "value"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "expected": {
+                "type": ["string", "number", "boolean"]
+              }
+            },
+            "required": ["expected"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "network"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "request": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "method": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  }
+                }
+              },
+              "expected": {
+                "type": ["string", "number", "boolean"]
+              }
+            },
+            "required": ["request", "expected"]
+          }
+        }
+      ]
+    }
+  }
+}
