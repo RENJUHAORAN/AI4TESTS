@@ -164,7 +164,7 @@ py -X utf8 -m ui_test_poc.cli discover all `
 
 安全默认值：
 
-- 只访问配置中的同源 allowlist，GET 导航以外不自动操作业务。
+- 页面导航和自动发现链接只访问 `target.allowedOrigins` 中的地址；浏览器的子资源加载仍依赖宿主网络出口控制。
 - Playwright 路由层会中止非 GET/HEAD/OPTIONS 请求，并记录为被阻止的 mutation 证据。
 - `allowMutations: true` 会在配置加载阶段直接失败。
 - URL 查询参数、网络请求和快照进入证据前必须脱敏。

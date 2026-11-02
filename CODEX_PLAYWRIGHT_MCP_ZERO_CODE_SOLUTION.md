@@ -21,19 +21,22 @@
 
 ### 1.1 当前 PoC 实现状态
 
-截至 2026-11-01，本仓库已经落地以下可执行部分：
+截至 2026-11-03，本仓库已经落地以下可执行部分：
 
 - 自然语言测试卡、Test Contract、Contract Schema 和 Run Result Schema。
-- 三个中文 Skill：`ui-test-orchestrator`、`ui-test-authoring`、`ui-test-triage`。
-- 三个项目 Skill 已通过 Codex App Server `skills/list` 实机发现，均为 `scope: repo`、`enabled: true` 且无加载错误。
+- 六个中文 Skill：`ui-test-orchestrator`、`ui-test-authoring`、`ui-test-triage`、`ui-source-inventory`、`ui-system-explorer`、`ui-process-cataloger`。
+- 原有三个测试 Skill 已通过 Codex App Server `skills/list` 实机发现；当前六个项目 Skill 均通过 Skill Creator 校验。
+- 多源系统流程发现链路：前端源码清点、Playwright 只读运行时探索、证据对账、流程候选目录和分维度覆盖率。
+- `discover source/runtime/reconcile/catalog/coverage/all` 分步与串联 CLI，以及 Source Graph、Runtime Graph、Reconciliation、Process Catalog 和 Discovery Manifest Schema。
+- 页面导航与链接发现受 `target.allowedOrigins` 约束；非 GET/HEAD/OPTIONS 请求在 Playwright 路由层中止并记录为 mutation 证据。
 - 只接受 `mode: verify` 的确定性 Playwright Runner，以及 Secret、origin 和结果 Schema 校验。
 - 成功场景的权威 `passed`，失败场景的权威 `failed`，浏览器缺失等基础设施异常的 `blocked`。
-- Trace、截图、可访问性快照、控制台和网络证据的统一落盘。
-- 预期失败演示，用于持续证明失败证据不会因“脚本返回成功”而丢失。
-- 16 个 Python pytest 用例覆盖 Contract、状态边界、结果 Schema、Codex 严格结构化输出约束、中文 Skill 结构和 Runner 关键辅助逻辑。
+- Trace、截图、可访问性快照、控制台和网络证据，以及流程发现快照、页面、跳转和 API JSONL 证据的统一落盘。
+- 35 个 Python pytest 用例覆盖 Contract、状态边界、结果 Schema、Codex 严格结构化输出约束、中文 Skill、Runner 辅助逻辑和系统流程发现。
+- 本地示例已用真实 Chromium 验证：2 条源码路由、2 个运行时页面、1 条跳转、2 条路由对账 `matched`，四类覆盖率均为 `1.0`。
 - Playwright MCP 已完成真实 `browser_navigate` 和 `browser_snapshot`；`codex exec --output-schema` 已生成通过本地 Schema 校验的 `observed-pass` 结果和真实快照引用。
 
-工程主体使用 Python 3.11+，包括 Contract 加载、JSON Schema 校验、Playwright Runner、CLI、证据采集、结果校验和 pytest。Node.js 只保留为 `@playwright/mcp@0.0.84` 的必要运行时。本机没有修改全局 Codex 配置。烟测通过一次性 `-c mcp_servers.playwright=...` 注册 MCP，不覆盖用户配置；团队标准注册示例见 `.codex/config.example.toml`。`npm run test:mcp` 可重复执行该闭环，但因会调用模型和网络，不纳入默认 `verify`。
+工程主体使用 Python 3.11+，包括 Contract 加载、JSON Schema 校验、Playwright Runner、系统流程发现、CLI、证据采集、结果校验和 pytest。Node.js 只保留为 `@playwright/mcp@0.0.84` 的必要运行时。本机没有修改全局 Codex 配置。烟测通过一次性 `-c mcp_servers.playwright=...` 注册 MCP，不覆盖用户配置；团队标准注册示例见 `.codex/config.example.toml`。`npm run test:mcp` 可重复执行该闭环，但因会调用模型和网络，不纳入默认 `verify`。
 
 ## 2. 研究基线
 
@@ -80,15 +83,18 @@
 ## 4. 总体架构
 
 ```text
-需求 / 验收标准 / 手工用例 / 缺陷复现
-                    |
-                    v
-        +-----------------------------+
-        | Codex Control Plane         |
-        | Skills / Prompt / Policies  |
-        +--------------+--------------+
-                       |
-                       v
+需求 / 验收标准 / 手工用例 / 缺陷复现       前端源码 / 可访问运行时
+                    |                              |
+                    v                              v
+        +-----------------------------+   +--------------------------+
+        | Codex Control Plane         |   | Discovery Plane          |
+        | Skills / Prompt / Policies  |<->| Source + Runtime + Net   |
+        +--------------+--------------+   | Reconcile / Catalog/Gaps |
+                       |                  +------------+-------------+
+                       |                               |
+                       +---------------+---------------+
+                                       |
+                                       v
         +-----------------------------+
         | Test Contract Plane         |
         | Test Card -> YAML / JSON IR |
@@ -126,12 +132,13 @@
                 +-------------------------+
 ```
 
-### 4.1 四个平面
+### 4.1 五个平面
 
 | 平面 | 责任 | 核心产物 |
 | --- | --- | --- |
 | Control Plane | Codex 会话、Skill 选择、工具策略、输出 Schema | 执行计划、分析建议、结构化结果 |
 | Contract Plane | 测试意图、数据引用、断言、风险等级、版本 | Test Card、Test Contract、审批记录 |
+| Discovery Plane | 源码清点、运行时探索、证据对账和流程候选 | Source Graph、Runtime Graph、Reconciliation、Process Catalog、Coverage |
 | Execution Plane | MCP 探索或确定性 Playwright 回归 | 步骤结果、浏览器会话、执行日志 |
 | Evidence Plane | 取证、断言、报告、归档和审计 | Trace、截图、DOM、网络、控制台、报告 |
 
@@ -144,6 +151,30 @@
 | `assist` | Codex + 证据包 | 失败分类、缺陷摘要、修复建议 | 否，只能给出建议 |
 
 这个区分是整套方案最重要的设计。没有它，系统会在“看起来通过”和“真正通过”之间失去边界。
+
+### 4.3 系统流程发现与最佳定位
+
+“最佳定位”不应只理解为单个元素选择器。可维护的 UI 自动化需要先建立系统级定位证据：
+
+```text
+前端源码 ----------> Source Graph（路由、页面入口、导航定义）
+Playwright --------> Runtime Graph（角色、可达页面、跳转、控制台）
+XHR / fetch -------> Network Evidence（接口依赖和行为线索）
+        \               /
+         Python Reconciler
+               |
+     流程候选目录 + 覆盖缺口
+               |
+     Test Card -> Contract -> Runner
+```
+
+- 前端源码回答“系统声明了哪些页面和入口”。
+- Playwright 回答“当前环境、当前角色实际能到达哪些页面”。
+- 网络证据回答“页面依赖哪些已观察接口”。
+- Python 负责稳定 ID、图合并、去重、覆盖率、Schema 和产物落盘。
+- AI 只做流程命名、语义归纳、风险解释和缺口建议，不生成权威测试结论。
+
+覆盖率包括 `routeCoverage`、`transitionCoverage`、`roleCoverage` 和 `processCoverage`。它们衡量证据覆盖，不代表需求覆盖或业务正确率。路由 `matched` 只表示源码与运行时对账成功。
 
 ## 5. 测试资产模型
 
@@ -291,6 +322,9 @@ Skill 应该固化“可重复的工程判断”，而不是复制 Playwright �
 | `ui-test-orchestrator` | 必需 | 通过 Playwright MCP 执行探索、调用工具、采集证据、输出观察结果 |
 | `ui-test-authoring` | 必需 | 把需求、Test Card、手工用例转成 Test Contract |
 | `ui-test-triage` | 必需 | 根据证据分类失败、生成缺陷摘要和定位修复建议 |
+| `ui-source-inventory` | 流程发现必需 | 只读清点前端路由、页面入口、导航定义和源码证据 |
+| `ui-system-explorer` | 流程发现必需 | 按角色隔离、只读探索运行时页面、跳转和网络证据 |
+| `ui-process-cataloger` | 流程发现必需 | 合并源码与运行时证据，生成流程候选和覆盖缺口 |
 | `playwright-browser-policy` | 可合并 | 定位优先级、等待策略、禁止动作、浏览器工具白名单 |
 | `api-db-oracle` | 按需 | 通过 API/DB 验证业务状态，避免只看 UI |
 | `visual-oracle` | 按需 | Canvas、图表、遮挡、白屏等视觉辅助判断 |
@@ -317,9 +351,15 @@ Skill 应该固化“可重复的工程判断”，而不是复制 Playwright �
       SKILL.md
     ui-test-triage/
       SKILL.md
+    ui-source-inventory/
+      SKILL.md
+    ui-system-explorer/
+      SKILL.md
+    ui-process-cataloger/
+      SKILL.md
 ```
 
-本仓库已经提供上述三个中文 starter skill，可作为首轮 PoC 的基础；后续再增加 API/DB 和视觉 oracle。
+本仓库已经提供上述六个中文 starter skill，可作为首轮 PoC 的基础；后续再增加 API/DB 和视觉 oracle。
 
 中文团队的 Skill 命名约定：
 
@@ -707,6 +747,7 @@ artifacts/
 - 测试人员不修改 Playwright 脚本即可完成契约生成和调整。
 - 失败分类在人工复核样本中达到可接受准确率，并记录误判。
 - 高风险动作全部进入审批或禁止列表。
+- 源码路由、运行时页面、角色、跳转和流程覆盖率能够输出证据化缺口，而不是宣称“已发现全部流程”。
 
 ## 14. 分阶段落地
 
@@ -717,11 +758,13 @@ artifacts/
 - 固定 Codex、MCP、浏览器和 Skill 版本。
 - 建立结果状态语义和证据目录。
 
-### 阶段 1：MCP 探索闭环
+### 阶段 1：只读探索与流程发现
 
 - 安装并隔离 Playwright MCP。
-- 建立 `ui-test-orchestrator`。
-- 实现自然语言执行、观察结果和证据包。
+- 建立 `ui-test-orchestrator`、`ui-source-inventory`、`ui-system-explorer` 和 `ui-process-cataloger`。
+- 建立 Source Graph、Runtime Graph、Reconciliation 和 Process Catalog。
+- 实现自然语言探索、观察结果、流程候选、覆盖缺口和证据包。
+- 页面导航限制在 origin allowlist；非只读请求在路由层中止并记录。
 - 不接发布门禁。
 
 ### 阶段 2：契约化
@@ -783,6 +826,8 @@ artifacts/
 | 成本过高 | 无法规模化 | 只让 Codex 做高价值环节，回归走确定性执行 |
 | Skill 过宽 | 意外操作 | 小而专的 Skill、明确输入输出和停止条件 |
 | 浏览器限制 | 覆盖不足 | 对 Canvas、iframe、移动端单独设计 |
+| 把发现当测试通过 | 假通过 | 路由 `matched` 仅表示对账成功；业务结论必须由 Test Contract Runner 产生 |
+| 把覆盖率当需求覆盖 | 过度乐观 | 同时报告 source-only、runtime-only、blocked 和未验证假设 |
 
 ## 17. 推荐目录
 
@@ -796,6 +841,12 @@ ai-ui-test/
         SKILL.md
       ui-test-triage/
         SKILL.md
+      ui-source-inventory/
+        SKILL.md
+      ui-system-explorer/
+        SKILL.md
+      ui-process-cataloger/
+        SKILL.md
   tests/
     cards/
     contracts/
@@ -803,6 +854,13 @@ ai-ui-test/
     test-contract.schema.json
     run-result.schema.json
     codex-run-result.schema.json
+    source-graph.schema.json
+    runtime-graph.schema.json
+    reconciliation.schema.json
+    process-catalog.schema.json
+    coverage.schema.json
+    discovery-config.schema.json
+    discovery-manifest.schema.json
   src/
     ui_test_poc/
       __init__.py
@@ -810,6 +868,15 @@ ai-ui-test/
       schema.py
       runner.py
       cli.py
+      discovery/
+        source_index.py
+        runtime_index.py
+        reconcile.py
+        catalog.py
+        coverage.py
+        config.py
+        models.py
+        schema.py
   scripts/
     run_contract.py
     run_demo.py
@@ -821,6 +888,11 @@ ai-ui-test/
   examples/
     login_app/
       server.py
+    discovery_frontend/
+      src/
+        router.tsx
+  discovery.example.yaml
+  discovery.local.example.yaml
 ```
 
 ## 18. 最终建议
@@ -830,10 +902,11 @@ ai-ui-test/
 1. **Web 优先**：首个 PoC 只覆盖 Web P0/P1 主链路。
 2. **MCP 做探索和取证**：用于测试资产生成、页面理解、失败分析和受控重试。
 3. **确定性执行做门禁**：Test Contract 由 Playwright Runner 回放，Codex 不拥有最终裁决权。
-4. **自然语言是入口，YAML 是资产**：测试人员零代码，但资产必须结构化、可版本化。
-5. **Skill 必须小而专**：编排、生成、取证、分类分开，避免一个万能 Skill 携带过多权限。
-6. **先人工审核，后受控自愈**：定位修复只生成建议，业务断言永远需要人工批准。
-7. **安全与评测先行**：Prompt Injection、Secret、网络出口和假通过率要在 PoC 阶段验证，不要留到规模化后。
+4. **先发现系统地图，再做用例**：用源码、运行时和网络证据建立路由与流程候选，显式记录覆盖缺口。
+5. **自然语言是入口，YAML 是资产**：测试人员零代码，但资产必须结构化、可版本化。
+6. **Skill 必须小而专**：编排、生成、取证、分类、源码清点、系统探索和流程对账分开，避免一个万能 Skill 携带过多权限。
+7. **先人工审核，后受控自愈**：定位修复只生成建议，业务断言永远需要人工批准。
+8. **安全与评测先行**：Prompt Injection、Secret、网络出口和假通过率要在 PoC 阶段验证，不要留到规模化后。
 
 如果只能做一个最小版本，建议先实现：
 
