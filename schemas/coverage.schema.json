@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai4tests.local/schemas/coverage.schema.json",
+  "title": "UI Evidence Coverage",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "runId",
+    "generatedAt",
+    "status",
+    "routeCoverage",
+    "runtimeDiscovery",
+    "transitionCoverage",
+    "roleCoverage",
+    "processCoverage",
+    "processBreakdown",
+    "gaps",
+    "caveats"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {"type": "string"},
+    "runId": {"type": "string"},
+    "generatedAt": {"type": "string"},
+    "status": {"enum": ["evidence-based"]},
+    "routeCoverage": {"$ref": "#/$defs/metric"},
+    "runtimeDiscovery": {"type": "object"},
+    "transitionCoverage": {"$ref": "#/$defs/metric"},
+    "roleCoverage": {"$ref": "#/$defs/metric"},
+    "processCoverage": {"$ref": "#/$defs/metric"},
+    "processBreakdown": {"type": "array"},
+    "gaps": {"type": "array"},
+    "caveats": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  },
+  "$defs": {
+    "metric": {
+      "type": "object",
+      "required": ["covered", "total", "ratio", "basis"],
+      "additionalProperties": false,
+      "properties": {
+        "covered": {"type": "integer", "minimum": 0},
+        "total": {"type": "integer", "minimum": 0},
+        "ratio": {"type": "number", "minimum": 0, "maximum": 1},
+        "basis": {"type": "string"}
+      }
+    }
+  }
+}

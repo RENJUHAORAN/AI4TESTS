@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai4tests.local/schemas/reconciliation.schema.json",
+  "title": "UI Evidence Reconciliation",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "runId",
+    "generatedAt",
+    "status",
+    "sourceRunId",
+    "runtimeRunId",
+    "records",
+    "summary",
+    "warnings"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {"type": "string"},
+    "runId": {"type": "string"},
+    "generatedAt": {"type": "string"},
+    "status": {"enum": ["review-required", "complete"]},
+    "sourceRunId": {"type": ["string", "null"]},
+    "runtimeRunId": {"type": ["string", "null"]},
+    "records": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/record"}
+    },
+    "summary": {"type": "object"},
+    "warnings": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  },
+  "$defs": {
+    "record": {
+      "type": "object",
+      "required": [
+        "id",
+        "path",
+        "status",
+        "source",
+        "runtimePages",
+        "reasons",
+        "confidence"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string"},
+        "path": {"type": "string"},
+        "status": {
+          "enum": [
+            "matched",
+            "source-only",
+            "runtime-only",
+            "conflict",
+            "blocked"
+          ]
+        },
+        "source": {"type": ["object", "null"]},
+        "runtimePages": {
+          "type": "array",
+          "items": {"type": "object"}
+        },
+        "reasons": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    }
+  }
+}

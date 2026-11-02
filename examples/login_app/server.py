@@ -38,6 +38,7 @@ LOGIN_PAGE = """<!doctype html>
         <button data-testid="login-submit" type="submit">登录</button>
         <div role="alert" data-testid="login-error"></div>
       </form>
+      <p><a href="/home">预览首页</a></p>
     </main>
     <script>
       document.getElementById("login-form").addEventListener("submit", (event) => {

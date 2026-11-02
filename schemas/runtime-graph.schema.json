@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai4tests.local/schemas/runtime-graph.schema.json",
+  "title": "UI Runtime Graph",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "runId",
+    "generatedAt",
+    "status",
+    "target",
+    "roles",
+    "pages",
+    "transitions",
+    "apiCalls",
+    "warnings",
+    "stats"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {"type": "string"},
+    "runId": {"type": "string"},
+    "generatedAt": {"type": "string"},
+    "status": {"enum": ["observed-runtime", "blocked"]},
+    "target": {"type": "object"},
+    "roles": {
+      "type": "array",
+      "items": {"type": "object"}
+    },
+    "pages": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/page"}
+    },
+    "transitions": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/transition"}
+    },
+    "apiCalls": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/apiCall"}
+    },
+    "warnings": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "stats": {"type": "object"}
+  },
+  "$defs": {
+    "page": {
+      "type": "object",
+      "required": [
+        "id",
+        "role",
+        "requestedUrl",
+        "finalUrl",
+        "path",
+        "title",
+        "status",
+        "httpStatus",
+        "depth",
+        "observedAt",
+        "snapshotPath",
+        "consoleErrorCount"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string"},
+        "role": {"type": "string"},
+        "requestedUrl": {"type": "string"},
+        "finalUrl": {"type": "string"},
+        "path": {"type": "string"},
+        "title": {"type": "string"},
+        "status": {
+          "enum": [
+            "observed",
+            "observed-with-errors",
+            "http-error",
+            "blocked-origin"
+          ]
+        },
+        "httpStatus": {"type": ["integer", "null"]},
+        "depth": {"type": "integer", "minimum": 0},
+        "observedAt": {"type": "string"},
+        "snapshotPath": {"type": ["string", "null"]},
+        "consoleErrorCount": {"type": "integer", "minimum": 0}
+      }
+    },
+    "transition": {
+      "type": "object",
+      "required": [
+        "id",
+        "role",
+        "fromPath",
+        "toPath",
+        "action",
+        "depth",
+        "observedAt"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string"},
+        "role": {"type": "string"},
+        "fromPath": {"type": "string"},
+        "toPath": {"type": "string"},
+        "action": {"type": "string"},
+        "depth": {"type": "integer", "minimum": 0},
+        "observedAt": {"type": "string"}
+      }
+    },
+    "apiCall": {
+      "type": "object",
+      "required": [
+        "id",
+        "role",
+        "pagePath",
+        "method",
+        "url",
+        "status",
+        "resourceType",
+        "classification",
+        "observedAt"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string"},
+        "role": {"type": "string"},
+        "pagePath": {"type": "string"},
+        "method": {"type": "string"},
+        "url": {"type": "string"},
+        "status": {"type": ["integer", "null"]},
+        "resourceType": {"type": "string"},
+        "classification": {
+          "enum": ["read", "read-query", "potential-mutation", "mutation"]
+        },
+        "observedAt": {"type": "string"}
+      }
+    }
+  }
+}

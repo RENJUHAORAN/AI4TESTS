@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai4tests.local/schemas/source-graph.schema.json",
+  "title": "UI Source Graph",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "runId",
+    "generatedAt",
+    "repository",
+    "status",
+    "routes",
+    "links",
+    "warnings",
+    "stats"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {"type": "string"},
+    "runId": {"type": "string"},
+    "generatedAt": {"type": "string"},
+    "repository": {"type": "string"},
+    "status": {"enum": ["observed-source", "review-required", "blocked"]},
+    "routes": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/route"}
+    },
+    "links": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/link"}
+    },
+    "warnings": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "stats": {"type": "object"}
+  },
+  "$defs": {
+    "sourceRef": {
+      "type": "object",
+      "required": ["path", "line"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {"type": "string"},
+        "line": {"type": "integer", "minimum": 1},
+        "symbol": {"type": ["string", "null"]}
+      }
+    },
+    "route": {
+      "type": "object",
+      "required": [
+        "id",
+        "path",
+        "normalized_path",
+        "name",
+        "component",
+        "source",
+        "kind",
+        "confidence"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string"},
+        "path": {"type": "string"},
+        "normalized_path": {"type": "string"},
+        "name": {"type": "string"},
+        "component": {"type": ["string", "null"]},
+        "source": {"$ref": "#/$defs/sourceRef"},
+        "kind": {"type": "string"},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "link": {
+      "type": "object",
+      "required": [
+        "id",
+        "target",
+        "normalized_target",
+        "action",
+        "source",
+        "confidence"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string"},
+        "target": {"type": "string"},
+        "normalized_target": {"type": "string"},
+        "action": {"type": "string"},
+        "source": {"$ref": "#/$defs/sourceRef"},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    }
+  }
+}

@@ -1,0 +1,42 @@
+schemaVersion: "1.0"
+outputRoot: artifacts/discovery
+
+source:
+  repository: ../frontend
+  include:
+    - "src/.*\\.(tsx|ts|jsx|js|vue)$"
+  exclude:
+    - ".*\\.(test|spec)\\.(tsx|ts|jsx|js)$"
+
+target:
+  baseUrlRef: APP_BASE_URL
+  allowedOrigins:
+    - https://staging.example.com
+
+browser:
+  viewport:
+    width: 1440
+    height: 900
+  locale: zh-CN
+
+roles:
+  - name: anonymous
+    startPaths:
+      - /
+  - name: standard-user
+    startPaths:
+      - /
+    storageStateRef: APP_USER_STORAGE_STATE
+    maxPages: 40
+
+safety:
+  maxPages: 80
+  maxDepth: 4
+  maxLinksPerPage: 120
+  includeSourceRoutes: true
+  allowQueryNavigation: true
+  allowMutations: false
+  waitAfterLoadMs: 300
+
+catalog:
+  maxDepth: 6

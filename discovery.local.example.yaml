@@ -1,0 +1,35 @@
+schemaVersion: "1.0"
+outputRoot: artifacts/discovery-local
+
+source:
+  repository: examples/discovery_frontend
+  include:
+    - "src/.*\\.(tsx|ts|jsx|js)$"
+
+target:
+  baseUrlRef: APP_BASE_URL
+  allowedOrigins:
+    - http://127.0.0.1:4173
+
+browser:
+  viewport:
+    width: 1280
+    height: 800
+  locale: zh-CN
+
+roles:
+  - name: anonymous
+    startPaths:
+      - /
+
+safety:
+  maxPages: 10
+  maxDepth: 2
+  maxLinksPerPage: 30
+  includeSourceRoutes: false
+  allowQueryNavigation: false
+  allowMutations: false
+  waitAfterLoadMs: 100
+
+catalog:
+  maxDepth: 3

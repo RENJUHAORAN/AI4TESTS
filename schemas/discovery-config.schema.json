@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai4tests.local/schemas/discovery-config.schema.json",
+  "title": "UI Discovery Config",
+  "type": "object",
+  "required": ["target"],
+  "additionalProperties": true,
+  "properties": {
+    "schemaVersion": {"type": "string"},
+    "outputRoot": {"type": "string"},
+    "source": {
+      "type": "object",
+      "properties": {
+        "repository": {"type": "string"},
+        "include": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "exclude": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      },
+      "additionalProperties": true
+    },
+    "target": {
+      "type": "object",
+      "properties": {
+        "baseUrl": {"type": "string"},
+        "baseUrlRef": {"type": "string"},
+        "allowedOrigins": {
+          "type": "array",
+          "items": {"type": "string", "format": "uri"},
+          "minItems": 1
+        }
+      },
+      "anyOf": [
+        {"required": ["baseUrl"]},
+        {"required": ["baseUrlRef"]}
+      ],
+      "additionalProperties": true
+    },
+    "browser": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "roles": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {"type": "string"},
+          {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": {"type": "string", "minLength": 1},
+              "startPaths": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "storageState": {"type": "string"},
+              "storageStateRef": {"type": "string"},
+              "maxPages": {"type": "integer", "minimum": 1},
+              "maxDepth": {"type": "integer", "minimum": 0}
+            },
+            "additionalProperties": true
+          }
+        ]
+      }
+    },
+    "safety": {
+      "type": "object",
+      "properties": {
+        "maxPages": {"type": "integer", "minimum": 1},
+        "maxDepth": {"type": "integer", "minimum": 0},
+        "maxLinksPerPage": {"type": "integer", "minimum": 0},
+        "includeSourceRoutes": {"type": "boolean"},
+        "allowQueryNavigation": {"type": "boolean"},
+        "allowMutations": {"const": false},
+        "waitAfterLoadMs": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": true
+    }
+  }
+}
